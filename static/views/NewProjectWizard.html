@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Project wizard</title>
+
+	<link rel="stylesheet" href="vscode-resource:/static/views/styles/Style.css">
+</head>
+<body>
+	<h1>New project</h1>
+	<label for="projectNameInput">
+		Project name:<br>
+		<input id="projectNameInput"/>
+	</label>
+	<button id="createProjectBtn">Create</button>
+
+	<script>
+		(function() {
+			const vscode = acquireVsCodeApi();
+			const projectNameInput = document.getElementById("projectNameInput");
+			const createProjectBtn = document.getElementById("createProjectBtn");
+			createProjectBtn.addEventListener("click", e => {
+				vscode.postMessage({
+					command: 'clickedCreateProjectBtn',
+					projectName: projectNameInput.value
+				});
+			})
+		}());
+	</script>
+</body>
+</html>

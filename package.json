@@ -1,0 +1,114 @@
+{
+	"name": "vscode-pacc",
+	"displayName": "PACC C++ Package Manager",
+	"description": "A Visual Studio Code extension that integrates PACC.",
+	"repository": "https://github.com/PoetaKodu/vscode-pacc",
+	"publisher": "PoetaKodu",
+	"license": "MIT",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.45.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onCommand:pacc.openNewProjectWizard",
+		"onCommand:pacc.buildProject",
+		"onCommand:pacc.loadRootProject",
+		"onView:paccProjectView"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "pacc.openNewProjectWizard",
+				"title": "New C++ project",
+				"icon": {
+					"light": "res/light/add-icon.svg",
+					"dark": "res/dark/add-icon.svg"
+				}
+			},
+			{
+				"command": "pacc.buildProject",
+				"title": "Build project",
+				"icon": {
+					"light": "res/light/build-icon.svg",
+					"dark": "res/dark/build-icon.svg"
+				}
+			},
+			{
+				"command": "pacc.loadRootProject",
+				"title": "Load C++ root project",
+				"icon": {
+					"light": "res/light/build-icon.svg",
+					"dark": "res/dark/build-icon.svg"
+				}
+			}
+		],
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "pacc",
+					"title": "PACC",
+					"icon": "res/logo.svg"
+				}
+			]
+		},
+		"views": {
+			"pacc": [
+				{
+					"id": "paccProjectView",
+					"name": "Projects"
+				}
+			]
+		},
+		"viewsWelcome": [
+			{
+				"view": "paccProjectView",
+				"contents": "[New project](command:pacc.openNewProjectWizard)\n[Load project](command:pacc.openNewProjectWizard)\n[New template](command:pacc.openNewProjectWizard)\n"
+			}
+		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "pacc.openNewProjectWizard",
+					"when": "view == paccProjectView",
+					"group": "navigation"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "pacc.buildProject",
+					"when": "view == paccProjectView",
+					"group": "inline"
+				}
+			],
+			"explorer/context": [
+				{
+					"command": "pacc.loadRootProject",
+					"when": "resourceFilename =~ /\\.build\\.json$/i",
+					"group": "Pacc"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile",
+		"test": "node ./out/test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/glob": "^7.1.1",
+		"@types/mocha": "^5.2.7",
+		"@types/node": "^12.11.7",
+		"@types/vscode": "^1.45.0",
+		"glob": "^7.1.5",
+		"mocha": "^6.2.2",
+		"typescript": "^3.6.4",
+		"tslint": "^5.20.0",
+		"vscode-test": "^1.2.2"
+	}
+}
