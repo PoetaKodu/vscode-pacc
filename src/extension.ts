@@ -9,13 +9,50 @@ import { Pacc } from './pacc/Pacc';
 import { PaccViewModel } from './ExtensionViewModel';
 import * as path from 'path';
 
+import {CppToolsApi, Version, CustomConfigurationProvider, getCppToolsApi, SourceFileConfigurationItem, WorkspaceBrowseConfiguration} from 'vscode-cpptools';
+import { EINPROGRESS } from 'constants';
+
+class CfgProvider implements CustomConfigurationProvider
+{
+	name: string;
+	extensionId: string;
+
+	constructor() {
+		this.name 			= "Pacc";
+		this.extensionId 	= "vscode-pacc";
+	}
+
+	canProvideConfiguration(uri: vscode.Uri, token?: vscode.CancellationToken): Thenable<boolean> {
+		throw new Error('Method not implemented.');
+	}
+	provideConfigurations(uris: vscode.Uri[], token?: vscode.CancellationToken): Thenable<SourceFileConfigurationItem[]> {
+		// let cfg = new SourceFileConfiguration();
+
+		throw new Error('Method not implemented.');
+	}
+	canProvideBrowseConfiguration(token?: vscode.CancellationToken): Thenable<boolean> {
+		// throw new Error('Method not implemented.');
+		return Promise.resolve(false);
+	}
+	provideBrowseConfiguration(token?: vscode.CancellationToken): Thenable<WorkspaceBrowseConfiguration | null> {
+		throw new Error('Method not implemented.');
+	}
+	canProvideBrowseConfigurationsPerFolder(token?: vscode.CancellationToken): Thenable<boolean> {
+		throw new Error('Method not implemented.');
+		return Promise.resolve(false);
+	}
+	provideFolderBrowseConfiguration(uri: vscode.Uri, token?: vscode.CancellationToken): Thenable<WorkspaceBrowseConfiguration | null> {
+		throw new Error('Method not implemented.');
+	}
+	dispose() {
+		// Nothing to do
+	}
+	
+}
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "vscode-pacc" is now active!');
 
 	const vm = new PaccViewModel;
 	vm.newProjectWizard = new NewProjectWizardWebviewHandler();
@@ -39,6 +76,28 @@ export function activate(context: vscode.ExtensionContext) {
 	updateWorkspaceFolders();
 
 	vscode.workspace.onDidChangeWorkspaceFolders(ev => updateWorkspaceFolders());
+
+
+	let cfgProvider = new CfgProvider();
+ 
+    let api = getCppToolsApi(Version.v5).then(api => {
+        api!.notifyReady(cfgProvider);
+		// Inform cpptools that a custom config provider will be able to service the current workspace.
+		api!.registerCustomConfigurationProvider(cfgProvider);
+
+		// Do any required setup that the provider needs.
+
+		// Notify cpptools that the provider is ready to provide IntelliSense configurations.
+		api!.notifyReady(cfgProvider);
+		// Running on a version of cpptools that doesn't support v2 yet.
+		
+		// Do any required setup that the provider needs.
+
+		// Inform cpptools that a custom config provider will be able to service the current workspace.
+		api!.registerCustomConfigurationProvider(cfgProvider);
+		api!.didChangeCustomConfiguration(cfgProvider);
+	});
+    // Dispose of the 'api' in your extension's deactivate() method, or whenever you want to unregister the provider.
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand

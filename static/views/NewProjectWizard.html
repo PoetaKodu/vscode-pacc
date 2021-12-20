@@ -5,27 +5,124 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Project wizard</title>
 
-	<link rel="stylesheet" href="vscode-resource:/static/views/styles/Style.css">
+	<style>
+
+		.Container {
+			width: 80%;
+			min-width: 500px;
+			margin: 0 auto;
+			margin-top: 10px;
+			padding: 5px;
+
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			column-gap: 20px;
+		}
+
+		.BigButtonList {
+			display: flex;
+			flex-wrap: wrap;
+			width: 100%;
+			padding: 5px 0;
+		}
+
+		.BigButton {
+			display: flex;
+			flex-wrap: wrap;
+			width: 100%;
+			padding: 5px 15px;
+			background-color: rgba(0, 0, 0, 0.2);
+			min-height: 30px;
+			box-sizing: border-box;
+			margin-top: 10px;
+		}
+
+		.BigButton:hover {
+			cursor: pointer;
+			background-color: rgba(0, 0, 0, 0.1);
+		}
+
+		.BigButton > * {
+			width: 100%;
+		}
+
+		.BigButton > h3 {
+			width: 100%;
+			/* margin: 0;
+			line-height: normal; */
+		}
+		.BigButton p {
+			color: rgb(197, 197, 197);
+		}
+
+		#ToolDescription {
+			grid-row: 1;
+			grid-column: 1 / 3;
+		}
+
+	</style>
 </head>
 <body>
-	<h1>New project</h1>
+	<!-- <h1>New project</h1>
 	<label for="projectNameInput">
 		Project name:<br>
 		<input id="projectNameInput"/>
 	</label>
-	<button id="createProjectBtn">Create</button>
+	<button id="createProjectBtn">Create</button> -->
+
+	<div class="Container">
+		<section id="ToolDescription">
+			<h1><a href="https://github.com/PoetaKodu/pacc">PACC</a></h1>
+			<p>
+				A package manager with integrated build system.<br/>
+				Choose what you want to do:
+			</p>
+		</section>
+		<section>
+			<h2>Create project</h1>
+			<div class="BigButtonList">
+				<div class="BigButton">
+					<h3>Empty project</h3>
+					<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Omnis, a!</p>
+				</div>
+				<div class="BigButton">
+					<h3>Console Application</h3>
+					<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Omnis, a!</p>
+				</div>
+				<div class="BigButton">
+					<h3>Static Library</h3>
+					<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Omnis, a!</p>
+				</div>
+				<div class="BigButton">
+					<h3>Shared Library</h3>
+					<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Omnis, a!</p>
+				</div>
+				<div class="BigButton">
+					<h3>Interface project</h3>
+					<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Omnis, a!</p>
+				</div>
+				<div class="BigButton">
+					<h3>More templates...</h3>
+					<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Omnis, a!</p>
+				</div>
+			</div>
+		</section>
+		<section>
+			<h2>More about <b>PACC</b></h2>
+		</section>
+	</div>
 
 	<script>
 		(function() {
 			const vscode = acquireVsCodeApi();
-			const projectNameInput = document.getElementById("projectNameInput");
-			const createProjectBtn = document.getElementById("createProjectBtn");
-			createProjectBtn.addEventListener("click", e => {
-				vscode.postMessage({
-					command: 'clickedCreateProjectBtn',
-					projectName: projectNameInput.value
-				});
-			})
+			// const projectNameInput = document.getElementById("projectNameInput");
+			// const createProjectBtn = document.getElementById("createProjectBtn");
+			// createProjectBtn.addEventListener("click", e => {
+			// 	vscode.postMessage({
+			// 		command: 'clickedCreateProjectBtn',
+			// 		projectName: projectNameInput.value
+			// 	});
+			// })
 		}());
 	</script>
 </body>
