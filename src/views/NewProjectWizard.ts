@@ -3,23 +3,27 @@ import { TextEncoder } from 'util';
 import * as path from "path";
 import * as fs from "fs";
 
+import { getUri } from "../util/getUri";
+import { NewProjectWizardContent } from './content/NewProjectWizard';
+
 export class NewProjectWizardWebviewHandler implements vscode.Disposable
 {
-	projectCreated : vscode.EventEmitter<string>;
+	projectCreated = new vscode.EventEmitter<string>();
 
 	extensionPath?: string;
+	extensionUri?: vscode.Uri;
 
 	private webview? : vscode.WebviewPanel;
 	private htmlContent? : string;
 
 	constructor()
 	{
-		this.projectCreated = new vscode.EventEmitter<string>();
 	}
 
-	setup(webview : vscode.WebviewPanel)
+	setup(webview : vscode.WebviewPanel, extensionUri: vscode.Uri)
 	{
 		this.webview = webview;
+		this.extensionUri = extensionUri;
 
 		webview.webview.html = this.getContent();
 		webview.webview.onDidReceiveMessage((e: any) => this.handleMessage(e));
@@ -29,20 +33,22 @@ export class NewProjectWizardWebviewHandler implements vscode.Disposable
 	{
 		vscode.window.showInformationMessage(`Created project: ${event.projectName}`);
 		const fs = vscode.workspace.fs;
-		const wksRoot = vscode.workspace.rootPath || "";
+		const wksRoot = vscode.workspace.workspaceFolders?.[0].uri.fsPath || "";
 		const uri = (str : string, prependFile = false) => vscode.Uri.file( (prependFile ? "file://" : "") + path.resolve(wksRoot, str) );
 
 		const enc = new TextEncoder();
 
 		const buildFileContents = JSON.stringify({
 			name: event.projectName,
-			type: "application",
+			type: "app",
 			files: [ "src/main.cpp" ]
 		}, undefined, "\t");
 		const mainCppContent = "#include <iostream>\n\nint main() {\n\tstd::cout << \"Hello, World!\" << std::endl;\n}\n";
 		
-		fs.writeFile(uri(`${event.projectName}.build.json`), enc.encode(buildFileContents));
-		fs.createDirectory(uri("./src"));
+		fs.writeFile(uri(`cpackage.json`), enc.encode(buildFileContents));
+		const dir = uri("./src");
+		vscode.window.showInformationMessage(dir.fsPath);
+		fs.createDirectory(dir);
 		fs.writeFile(uri("src/main.cpp"), enc.encode(mainCppContent)).then(
 			() => {
 				vscode.workspace.openTextDocument(uri("src/main.cpp")).then( t => vscode.window.showTextDocument(t) );
@@ -53,7 +59,7 @@ export class NewProjectWizardWebviewHandler implements vscode.Disposable
 				vscode.window.showInformationMessage("Failed");
 			}
 		);
-		this.projectCreated.fire(`${event.projectName}.build.json`);
+		this.projectCreated.fire(`cpackage.json`);
 	}
 
 	dispose() {
@@ -62,9 +68,17 @@ export class NewProjectWizardWebviewHandler implements vscode.Disposable
 
 	getContent() : string
 	{
-		if (!this.htmlContent)
-		{
-			this.htmlContent = fs.readFileSync( path.join(this.extensionPath!, "static", "views", "NewProjectWizard.html" ) ).toString();
+		if (!this.htmlContent) {
+			const toolkitUri = getUri(this.webview!.webview, this.extensionUri!, [
+				"node_modules",
+				"@vscode",
+				"webview-ui-toolkit",
+				"dist",
+				"toolkit.js",
+			]);
+
+			this.htmlContent = NewProjectWizardContent(toolkitUri);
+			// this.htmlContent = fs.readFileSync( path.join(this.extensionPath!, "static", "views", "NewProjectWizard.html" ) ).toString();
 		}
 		return this.htmlContent!;
 	}

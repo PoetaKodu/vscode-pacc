@@ -1,15 +1,16 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import { ProjectInfo } from '../pacc/Pacc';
+import { info } from 'console';
+
+const makeDep = (project : ProjectInfo) => {
+	return new ProjectTreeItem(project, (project.children ?? []).length > 0 ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.None);
+};
 
 export class ProjectTreeProvider implements vscode.TreeDataProvider<ProjectTreeItem> {
 
-	projects : string[] = [];	
-
-	private toDep(project : string)
-	{
-		return new ProjectTreeItem(project, project);
-	}
+	projects : ProjectInfo[] = [];	
 
 	private _onDidChangeTreeData = new vscode.EventEmitter<ProjectTreeItem | undefined>();
 	readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
@@ -25,10 +26,10 @@ export class ProjectTreeProvider implements vscode.TreeDataProvider<ProjectTreeI
 	getChildren(element?: ProjectTreeItem): Thenable<ProjectTreeItem[]>
 	{
 		if (element) {
-			return Promise.resolve([]);	
+			return Promise.resolve(element.info.children.map(makeDep));	
 		}
 		else {
-			return Promise.resolve(this.projects.map(e => this.toDep(e)));
+			return Promise.resolve(this.projects.map(makeDep));
 		}
 	}
 }
@@ -36,18 +37,16 @@ export class ProjectTreeProvider implements vscode.TreeDataProvider<ProjectTreeI
 export class ProjectTreeItem extends vscode.TreeItem {
 
 	constructor(
-		public readonly name: string,
-		private scriptFile: string
+		public readonly info : ProjectInfo,
+		public readonly collapsibleState: vscode.TreeItemCollapsibleState
 	) {
-		super(name, vscode.TreeItemCollapsibleState.None);
+		super(info.name, collapsibleState);
 
-		this.tooltip = `${this.name} (${this.scriptFile})`;
-		this.description = this.scriptFile;
+		let isWorkspace = (info.children ?? []).length > 0;
+
+		this.tooltip = `${this.info.name} (${this.info.type})`;
+		this.description = this.info.type;	
+		this.contextValue = isWorkspace ? "workspace" : "project";
+		this.iconPath = new vscode.ThemeIcon(isWorkspace ? "package" : "project");
 	}
-
-
-	iconPath = {
-		light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
-		dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
-	};
 }

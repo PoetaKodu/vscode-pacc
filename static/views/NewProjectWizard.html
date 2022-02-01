@@ -81,29 +81,29 @@
 		<section>
 			<h2>Create project</h1>
 			<div class="BigButtonList">
-				<div class="BigButton">
+				<div class="BigButton" id="CreateEmptyProjectBtn">
 					<h3>Empty project</h3>
-					<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Omnis, a!</p>
+					<p>Create an empty C++ project.</p>
 				</div>
 				<div class="BigButton">
 					<h3>Console Application</h3>
-					<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Omnis, a!</p>
+					<p>Create a console application project.</p>
 				</div>
 				<div class="BigButton">
 					<h3>Static Library</h3>
-					<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Omnis, a!</p>
+					<p>Create a static library.</p>
 				</div>
 				<div class="BigButton">
 					<h3>Shared Library</h3>
-					<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Omnis, a!</p>
+					<p>Create a shared library</p>
 				</div>
 				<div class="BigButton">
 					<h3>Interface project</h3>
-					<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Omnis, a!</p>
+					<p>Create an interface project</p>
 				</div>
 				<div class="BigButton">
 					<h3>More templates...</h3>
-					<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Omnis, a!</p>
+					<p>Browse more templates from the web.</p>
 				</div>
 			</div>
 		</section>
@@ -116,13 +116,13 @@
 		(function() {
 			const vscode = acquireVsCodeApi();
 			// const projectNameInput = document.getElementById("projectNameInput");
-			// const createProjectBtn = document.getElementById("createProjectBtn");
-			// createProjectBtn.addEventListener("click", e => {
-			// 	vscode.postMessage({
-			// 		command: 'clickedCreateProjectBtn',
-			// 		projectName: projectNameInput.value
-			// 	});
-			// })
+			const createProjectBtn = document.getElementById("CreateEmptyProjectBtn");
+			createProjectBtn.addEventListener("click", e => {
+				vscode.postMessage({
+					command: 'clickedCreateProjectBtn',
+					projectName: "EmptyProject"
+				});
+			})
 		}());
 	</script>
 </body>

@@ -7,16 +7,19 @@
 	"license": "MIT",
 	"version": "0.0.1",
 	"engines": {
-		"vscode": "^1.45.0"
+		"vscode": "^1.63.0"
 	},
 	"categories": [
 		"Other"
 	],
 	"activationEvents": [
 		"onCommand:pacc.openNewProjectWizard",
+		"onCommand:pacc.refreshProjects",
+		"onCommand:pacc.runProject",
 		"onCommand:pacc.buildProject",
 		"onCommand:pacc.loadRootProject",
-		"onView:paccProjectView"
+		"onView:paccProjectView",
+		"onView:pacc.settingsView"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -30,12 +33,22 @@
 				}
 			},
 			{
+				"command": "pacc.refreshProjects",
+				"title": "Refresh",
+				"icon": "$(refresh)"
+			},
+			{
 				"command": "pacc.buildProject",
-				"title": "Build project",
+				"title": "Build",
 				"icon": {
 					"light": "res/light/build-icon.svg",
 					"dark": "res/dark/build-icon.svg"
 				}
+			},
+			{
+				"command": "pacc.runProject",
+				"title": "Run",
+				"icon": "$(run)"
 			},
 			{
 				"command": "pacc.loadRootProject",
@@ -60,6 +73,11 @@
 				{
 					"id": "paccProjectView",
 					"name": "Projects"
+				},
+				{
+					"id": "pacc.settingsView",
+					"name": "Settings",
+					"type": "webview"
 				}
 			]
 		},
@@ -75,9 +93,19 @@
 					"command": "pacc.openNewProjectWizard",
 					"when": "view == paccProjectView",
 					"group": "navigation"
+				},
+				{
+					"command": "pacc.refreshProjects",
+					"when": "view == paccProjectView",
+					"group": "navigation"
 				}
 			],
 			"view/item/context": [
+				{
+					"command": "pacc.runProject",
+					"when": "view == paccProjectView && viewItem != workspace",
+					"group": "inline"
+				},
 				{
 					"command": "pacc.buildProject",
 					"when": "view == paccProjectView",
@@ -104,12 +132,15 @@
 		"@types/glob": "^7.1.1",
 		"@types/mocha": "^5.2.7",
 		"@types/node": "^12.11.7",
-		"@types/vscode": "^1.45.0",
+		"@types/vscode": "^1.63.0",
 		"glob": "^7.1.5",
 		"mocha": "^6.2.2",
-		"typescript": "^3.6.4",
 		"tslint": "^5.20.0",
-		"vscode-test": "^1.2.2",
-		"vscode-cpptools": "^5.0.0"
+		"typescript": "^3.6.4",
+		"vscode-cpptools": "^5.0.0",
+		"vscode-test": "^1.2.2"
+	},
+	"dependencies": {
+		"@vscode/webview-ui-toolkit": "^0.9.0"
 	}
 }
