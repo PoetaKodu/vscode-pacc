@@ -69,14 +69,14 @@ export class Pacc
 		});
 	}
 
-	async runProject()
+	async runProject(projectName = "")
 	{
 		this.outputChannel?.show();
 
 		this.log(`# Running "${this.projectFile}"\n`);
 
 		return new Promise<void>((resolve) => {
-			this.runCommand([ "run" ],
+			this.runCommand([ "run", projectName ],
 				(code, signal) => {
 					resolve();
 				}, true);
@@ -127,7 +127,7 @@ export class Pacc
 	runCommand(params : string[],
 				onClosed : (code : number, signal : NodeJS.Signals) => void, skipPrefix = false)
 	{
-		const proc = spawnShellScript("pacc", params, { cwd: this.workspaceDirectory });
+		const proc = spawnShellScript("pacc-nightly", params, { cwd: this.workspaceDirectory });
 
 		proc.stdout.on("data", (str : string) => { this.log(skipPrefix ? `${str}` : `[PACC | Info]: ${str}`); });
 		proc.stderr.on("data", (str : string) => { this.log(skipPrefix ? `${str}` : `[PACC | Error]: ${str}`); });

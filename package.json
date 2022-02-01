@@ -103,7 +103,7 @@
 			"view/item/context": [
 				{
 					"command": "pacc.runProject",
-					"when": "view == paccProjectView && viewItem != workspace",
+					"when": "view == paccProjectView && viewItem == app",
 					"group": "inline"
 				},
 				{
@@ -115,7 +115,7 @@
 			"explorer/context": [
 				{
 					"command": "pacc.loadRootProject",
-					"when": "resourceFilename =~ /\\.build\\.json$/i",
+					"when": "resourceFilename =~ /\\cpackage\\.json$/i",
 					"group": "Pacc"
 				}
 			]

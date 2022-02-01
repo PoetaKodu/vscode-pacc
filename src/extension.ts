@@ -175,8 +175,9 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('pacc.runProject',
 			(element : ProjectTreeItem) => {
-				vscode.window.showInformationMessage(`Running project "${element.label!}"`);
-				vm.model!.runProject();
+				const projectName = element.contextValue !== "workspace" ? element.info.name : "";
+				vscode.window.showInformationMessage(`Running project "${projectName}"`);
+				vm.model!.runProject(projectName);
 			}
 		)
 	);

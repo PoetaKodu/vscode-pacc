@@ -46,7 +46,7 @@ export class ProjectTreeItem extends vscode.TreeItem {
 
 		this.tooltip = `${this.info.name} (${this.info.type})`;
 		this.description = this.info.type;	
-		this.contextValue = isWorkspace ? "workspace" : "project";
+		this.contextValue = info.type || "workspace";
 		this.iconPath = new vscode.ThemeIcon(isWorkspace ? "package" : "project");
 	}
 }
