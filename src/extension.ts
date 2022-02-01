@@ -5,12 +5,20 @@ import * as vscode from 'vscode';
 import { ProjectTreeProvider, ProjectTreeItem } from './views/Projects';
 import { NewProjectWizardWebviewHandler } from './views/NewProjectWizard';
 
-import { Pacc } from './pacc/Pacc';
+import { Pacc, ProjectInfo } from './pacc/Pacc';
 import { PaccViewModel } from './ExtensionViewModel';
 import * as path from 'path';
+import * as fs from "fs";
 
-import {CppToolsApi, Version, CustomConfigurationProvider, getCppToolsApi, SourceFileConfigurationItem, WorkspaceBrowseConfiguration} from 'vscode-cpptools';
-import { EINPROGRESS } from 'constants';
+import {
+	Version,
+	CppToolsApi,
+	getCppToolsApi,
+	CustomConfigurationProvider,
+	SourceFileConfigurationItem,
+	WorkspaceBrowseConfiguration
+} from 'vscode-cpptools';
+import { PaccSettingsViewProvider } from './views/Settings';
 
 class CfgProvider implements CustomConfigurationProvider
 {
@@ -61,42 +69,55 @@ export function activate(context: vscode.ExtensionContext) {
 	const pacc = new Pacc;
 	vm.model = pacc;
 
-	const updateWorkspaceFolders = () => {
-		if (vscode.workspace.rootPath)
-		{
-			pacc.buildDirectory = path.join(vscode.workspace.rootPath, "build");
-			pacc.workspaceDirectory = vscode.workspace.rootPath;
-			vscode.window.showInformationMessage("Workspace folders updated.");
+	pacc.onProjectsRefresh.event(
+		(projects : ProjectInfo[]) => {
+			vm.projectTree!.projects = projects;
+			vm.projectTree!.refresh();
 		}
-		else
+	);
+
+	const updateWorkspaceFolders = () => {
+		if (!vscode.workspace.workspaceFolders)
 		{
 			vscode.window.showInformationMessage("No workspace open.");
+			return;
 		}
+		const wks = vscode.workspace.workspaceFolders[0].uri.fsPath;
+
+		pacc.buildDirectory = path.join(wks, "build");
+		pacc.workspaceDirectory = wks;
+		if (fs.existsSync(path.join(wks, "cpackage.json")))
+		{
+			pacc.setProjectFile("cpackage.json");
+			pacc.reloadProjects();
+		}
+
+		vscode.window.showInformationMessage("Workspace folders updated.");
 	};
 	updateWorkspaceFolders();
 
 	vscode.workspace.onDidChangeWorkspaceFolders(ev => updateWorkspaceFolders());
 
 
-	let cfgProvider = new CfgProvider();
+	// let cfgProvider = new CfgProvider();
  
-    let api = getCppToolsApi(Version.v5).then(api => {
-        api!.notifyReady(cfgProvider);
-		// Inform cpptools that a custom config provider will be able to service the current workspace.
-		api!.registerCustomConfigurationProvider(cfgProvider);
+    // let api = getCppToolsApi(Version.v5).then(api => {
+    //     api!.notifyReady(cfgProvider);
+	// 	// Inform cpptools that a custom config provider will be able to service the current workspace.
+	// 	api!.registerCustomConfigurationProvider(cfgProvider);
 
-		// Do any required setup that the provider needs.
+	// 	// Do any required setup that the provider needs.
 
-		// Notify cpptools that the provider is ready to provide IntelliSense configurations.
-		api!.notifyReady(cfgProvider);
-		// Running on a version of cpptools that doesn't support v2 yet.
+	// 	// Notify cpptools that the provider is ready to provide IntelliSense configurations.
+	// 	api!.notifyReady(cfgProvider);
+	// 	// Running on a version of cpptools that doesn't support v2 yet.
 		
-		// Do any required setup that the provider needs.
+	// 	// Do any required setup that the provider needs.
 
-		// Inform cpptools that a custom config provider will be able to service the current workspace.
-		api!.registerCustomConfigurationProvider(cfgProvider);
-		api!.didChangeCustomConfiguration(cfgProvider);
-	});
+	// 	// Inform cpptools that a custom config provider will be able to service the current workspace.
+	// 	api!.registerCustomConfigurationProvider(cfgProvider);
+	// 	api!.didChangeCustomConfiguration(cfgProvider);
+	// });
     // Dispose of the 'api' in your extension's deactivate() method, or whenever you want to unregister the provider.
 
 	// The command has been defined in the package.json file
@@ -112,15 +133,34 @@ export function activate(context: vscode.ExtensionContext) {
 				{
 					enableScripts: true,
 					localResourceRoots: [
-						vscode.Uri.file(path.join(context.extensionPath, 'static', 'views'))
+						context.extensionUri,
+						vscode.Uri.joinPath(context.extensionUri, 'static', 'views')
 					]
 				} // Webview options. More on these later.
 			);
 
-			vm.newProjectWizard!.setup(panel);
-
+			vm.newProjectWizard!.setup(panel, context.extensionUri);
+			
 			context.subscriptions.push(vm.newProjectWizard!);
 		})
+	);
+
+	const settingsProvider = new PaccSettingsViewProvider(context.extensionUri);
+
+	context.subscriptions.push(vscode.window.registerWebviewViewProvider(
+			"pacc.settingsView",
+			settingsProvider
+		)
+	);
+	
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand('pacc.refreshProjects',
+			() => {
+				vscode.window.showInformationMessage(`Reloading projects...`);
+				pacc.reloadProjects();
+			}
+		)
 	);
 
 	context.subscriptions.push(
@@ -133,19 +173,21 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 
 	context.subscriptions.push(
+		vscode.commands.registerCommand('pacc.runProject',
+			(element : ProjectTreeItem) => {
+				vscode.window.showInformationMessage(`Running project "${element.label!}"`);
+				vm.model!.runProject();
+			}
+		)
+	);
+
+	context.subscriptions.push(
 		vscode.commands.registerCommand('pacc.loadRootProject',
 			(uri : vscode.Uri) => {
 				const projectName = path.relative(vm.model!.workspaceDirectory, uri.fsPath);
 				vscode.window.showInformationMessage(`Loading root project "${projectName}"\nPath: ${uri.fsPath} \nWorkspace: ${vm.model!.workspaceDirectory}`);
-				vm.model!.setProjectFile(projectName);
-				vm.model!.discoverProjects().then(
-					(projects) => {
-						vm.projectTree!.projects = [ ...projects ];
-						vm.projectTree!.refresh();
-					}
-				);
-
-				
+				pacc.setProjectFile(projectName);
+				pacc.reloadProjects();
 			}
 		)
 	);
