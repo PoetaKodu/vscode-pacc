@@ -14,8 +14,7 @@ export class PaccViewModel
 		this.newProjectWizard!.projectCreated.event(
 			projectName => {
 				this.model!.setProjectFile(projectName);
-				this.projectTree!.projects = [ projectName ];
-				this.projectTree!.refresh();
+				this.model!.reloadProjects();
 			});
 	}
 }
